@@ -1,4 +1,4 @@
-Sample 1
+ Sample 1
 
 WITH agg_weight_tbl AS (
 	SELECT agg_w.name AS name, agg_weight 
