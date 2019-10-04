@@ -32,7 +32,7 @@ public class HolidayCalculator {
         Month monthA = Month.valueOf(A.toUpperCase());
         Month monthB = Month.valueOf(B.toUpperCase());
         if (monthB.getValue() < monthA.getValue()) {
-            System.err.println("Month B does not preceed month A");
+            System.err.println("Month B does not precede month A");
             return -1;
         }
         LocalDate dateA = Year.of(Y)
