@@ -12,10 +12,10 @@ public class PhoneBilling {
 
     public static void main(String[] args) {
 //        String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:05:00,400-234-090"; // 900
-        String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:00:01,601-080-080 00:01:06,701-080-080 00:05:00," +
-                "400-234-090"; // 951
+/*        String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:00:01,601-080-080 00:01:06,701-080-080 00:05:00," +
+                "400-234-090"; // 951*/
 //        String S = "07:01:07,400-234-090 10:05:01,701-080-080 00:05:00,400-234-090"; // 64050
-//        String S = "00:01:07,400-234-090 00:05:00,400-234-090"; // 951
+        String S = "00:01:07,400-234-090 00:05:00,400-234-090"; // 951
 //        String S = "00:01:07,400-234-090"; // 201
 //        String S = ""; // 0
         System.out.println(solution(S));
@@ -47,27 +47,16 @@ public class PhoneBilling {
             return totalAmount;
         }
 
-        long longestTotalDuration = 0;
+        int longestTotalDuration = 0;
+        int freeAmount = 0;
         for (Map.Entry<String, List<CallDuration>> e : phoneLogsMap.entrySet()) {
             // find the longest total duration
-            long totalSecPerNumber = compute(e.getValue());
-            longestTotalDuration = Math.max(longestTotalDuration, totalSecPerNumber);
-        }
-
-        // find the smallest phone number that shares the longest total duration
-        String freePhoneNumber = "";
-        for (Map.Entry<String, List<CallDuration>> e : phoneLogsMap.entrySet()) {
-            long totalSecPerNumber = compute(e.getValue());
-            if (totalSecPerNumber == longestTotalDuration) {
-                if (freePhoneNumber.isEmpty() || freePhoneNumber.compareToIgnoreCase(e.getKey()) > 0) {
-                    freePhoneNumber = e.getKey();
-                }
+            int totalSecPerNumber = compute(e.getValue());
+            if (totalSecPerNumber > longestTotalDuration) {
+                longestTotalDuration = totalSecPerNumber;
+                freeAmount = totalSecPerNumber;
             }
         }
-
-        // re-compute the free amount for the free promotion
-        int freeAmount = compute(phoneLogsMap.get(freePhoneNumber));
-
         return totalAmount - freeAmount;
     }
 
