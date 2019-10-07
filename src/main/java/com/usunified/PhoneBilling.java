@@ -11,21 +11,27 @@ public class PhoneBilling {
     private static final int SECONDS_PER_MINUTE = 1 * 60;
 
     public static void main(String[] args) {
-//        String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:05:00,400-234-090"; // 900
-/*        String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:00:01,601-080-080 00:01:06,701-080-080 00:05:00," +
-                "400-234-090"; // 951*/
-//        String S = "07:01:07,400-234-090 10:05:01,701-080-080 00:05:00,400-234-090"; // 64050
-        String S = "00:01:07,400-234-090 00:05:00,400-234-090"; // 951
-//        String S = "00:01:07,400-234-090"; // 201
-//        String S = ""; // 0
-        System.out.println(solution(S));
+        String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:05:00,400-234-090"; // 900
+        System.out.println(S + " = " + solution(S));
+        S = "00:01:07,400-234-090 00:05:01,701-080-080 00:00:01,601-080-080 00:01:06,701-080-080 00:05:00," + "400" + "-234-090"; // 954
+        System.out.println(S + " = " + solution(S));
+        S = "07:01:07,400-234-090 10:05:01,701-080-080 00:05:00,400-234-090"; // 64050
+        System.out.println(S + " = " + solution(S));
+        S = "00:01:07,400-234-090 00:05:00,400-234-090"; // 951
+        System.out.println(S + " = " + solution(S));
+        S = "00:01:07,400-234-090"; // 201
+        System.out.println(S + " = " + solution(S));
+        S = ""; // 0
+        System.out.println(S + " = " + solution(S));
+        S = null; // 0
+        System.out.println(S + " = " + solution(S));
     }
 
     static int solution(String S) {
-        if (S.isEmpty()) return 0;
+        if (S == null || S.isEmpty()) return 0;
 
         String[] phoneCalls = S.split(" ");
-        Map<String, List<CallDuration>> phoneLogsMap = new HashMap<>();
+        Map<String, List<CallDuration>> callsPerNumber = new HashMap<>();
 
         int totalAmount = 0;
         for (String call : phoneCalls) {
@@ -34,22 +40,22 @@ public class PhoneBilling {
             String phoneNumber = durationAndPhoneNumber[1];
             String callDuration = durationAndPhoneNumber[0];
             CallDuration duration = CallDuration.parse(callDuration);
-            List<CallDuration> durationPerNumber = phoneLogsMap.getOrDefault(phoneNumber, new ArrayList<>());
+            List<CallDuration> durationPerNumber = callsPerNumber.getOrDefault(phoneNumber, new ArrayList<>());
             durationPerNumber.add(duration);
-            phoneLogsMap.put(phoneNumber, durationPerNumber);
+            callsPerNumber.put(phoneNumber, durationPerNumber);
 
             // compute amount
             totalAmount += compute(duration);
         }
 
         // in case there is only one phone number logged, it must pay
-        if (phoneLogsMap.size() == 1) {
+        if (callsPerNumber.size() == 1) {
             return totalAmount;
         }
 
         int longestTotalDuration = 0;
         int freeAmount = 0;
-        for (Map.Entry<String, List<CallDuration>> e : phoneLogsMap.entrySet()) {
+        for (Map.Entry<String, List<CallDuration>> e : callsPerNumber.entrySet()) {
             // find the longest total duration
             int totalSecPerNumber = compute(e.getValue());
             if (totalSecPerNumber > longestTotalDuration) {
