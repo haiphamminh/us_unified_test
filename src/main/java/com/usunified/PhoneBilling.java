@@ -53,16 +53,25 @@ public class PhoneBilling {
             return totalAmount;
         }
 
-        int longestTotalDuration = 0;
-        int freeAmount = 0;
+        long longestTotalDuration = 0;
         for (Map.Entry<String, List<CallDuration>> e : callsPerNumber.entrySet()) {
             // find the longest total duration
-            int totalSecPerNumber = compute(e.getValue());
-            if (totalSecPerNumber > longestTotalDuration) {
-                longestTotalDuration = totalSecPerNumber;
-                freeAmount = totalSecPerNumber;
+            long totalSecPerNumber = compute(e.getValue());
+            longestTotalDuration = Math.max(longestTotalDuration, totalSecPerNumber);
+        }
+
+        // find the smallest phone number that shares the longest total duration
+        String freePhoneNumber = "";
+        for (Map.Entry<String, List<CallDuration>> e : callsPerNumber.entrySet()) {
+            long totalSecPerNumber = compute(e.getValue());
+            if (totalSecPerNumber == longestTotalDuration) {
+                if (freePhoneNumber.isEmpty() || freePhoneNumber.compareToIgnoreCase(e.getKey()) > 0) {
+                    freePhoneNumber = e.getKey();
+                }
             }
         }
+        // re-compute the free amount for the free promotion
+        int freeAmount = compute(callsPerNumber.get(freePhoneNumber));
         return totalAmount - freeAmount;
     }
 
