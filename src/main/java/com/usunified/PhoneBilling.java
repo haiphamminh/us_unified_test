@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PhoneBilling {
     private static final int FIVE_MINUTES_IN_SEC = 5 * 60;
@@ -13,7 +14,9 @@ public class PhoneBilling {
     public static void main(String[] args) {
         String S = "00:01:07,400-234-090 00:05:01,701-080-080 00:05:00,400-234-090"; // 900
         System.out.println(S + " = " + solution(S));
-        S = "00:01:07,400-234-090 00:05:01,701-080-080 00:00:01,601-080-080 00:01:06,701-080-080 00:05:00," + "400" + "-234-090"; // 954
+        S = "00:05:01,400-234-090 00:01:07,701-080-080 00:05:00,701-080-080 00:01:06,400-234-090"; // 951
+        System.out.println(S + " = " + solution(S));
+        S = "00:01:07,400-234-090 00:05:01,701-080-080 00:00:01,601-080-080 00:01:06,701-080-080 00:05:00," + "400" + "-234-090"; // 1101
         System.out.println(S + " = " + solution(S));
         S = "07:01:07,400-234-090 10:05:01,701-080-080 00:05:00,400-234-090"; // 64050
         System.out.println(S + " = " + solution(S));
@@ -40,12 +43,12 @@ public class PhoneBilling {
             String phoneNumber = durationAndPhoneNumber[1];
             String callDuration = durationAndPhoneNumber[0];
             CallDuration duration = CallDuration.parse(callDuration);
-            List<CallDuration> durationPerNumber = callsPerNumber.getOrDefault(phoneNumber, new ArrayList<>());
-            durationPerNumber.add(duration);
-            callsPerNumber.put(phoneNumber, durationPerNumber);
+            List<CallDuration> durationsPerNumber = callsPerNumber.getOrDefault(phoneNumber, new ArrayList<>());
+            durationsPerNumber.add(duration);
+            callsPerNumber.put(phoneNumber, durationsPerNumber);
 
             // compute amount
-            totalAmount += compute(duration);
+            totalAmount += computePrice(duration);
         }
 
         // in case there is only one phone number logged, it must pay
@@ -56,32 +59,36 @@ public class PhoneBilling {
         long longestTotalDuration = 0;
         for (Map.Entry<String, List<CallDuration>> e : callsPerNumber.entrySet()) {
             // find the longest total duration
-            long totalSecPerNumber = compute(e.getValue());
-            longestTotalDuration = Math.max(longestTotalDuration, totalSecPerNumber);
+            long totalDurationPerNumber = toSeconds(e.getValue());
+            longestTotalDuration = Math.max(longestTotalDuration, totalDurationPerNumber);
         }
 
         // find the smallest phone number that shares the longest total duration
         String freePhoneNumber = "";
         for (Map.Entry<String, List<CallDuration>> e : callsPerNumber.entrySet()) {
-            long totalSecPerNumber = compute(e.getValue());
-            if (totalSecPerNumber == longestTotalDuration) {
+            long totalDurationPerNumber = toSeconds(e.getValue());
+            if (totalDurationPerNumber == longestTotalDuration) {
                 if (freePhoneNumber.isEmpty() || freePhoneNumber.compareToIgnoreCase(e.getKey()) > 0) {
                     freePhoneNumber = e.getKey();
                 }
             }
         }
         // re-compute the free amount for the free promotion
-        int freeAmount = compute(callsPerNumber.get(freePhoneNumber));
+        int freeAmount = computePrice(callsPerNumber.get(freePhoneNumber));
         return totalAmount - freeAmount;
     }
 
-    static int compute(List<CallDuration> callDurations) {
+    static int toSeconds(List<CallDuration> callDurations) {
         return callDurations.stream()
-                            .mapToInt(PhoneBilling::compute)
-                            .sum();
+                            .collect(Collectors.summingInt(CallDuration::toSecond));
     }
 
-    static int compute(CallDuration callDuration) {
+    static int computePrice(List<CallDuration> callDurations) {
+        return callDurations.stream()
+                            .collect(Collectors.summingInt(PhoneBilling::computePrice));
+    }
+
+    static int computePrice(CallDuration callDuration) {
         int amount = 0;
         int sec = callDuration.toSecond();
         if (sec < FIVE_MINUTES_IN_SEC) {
