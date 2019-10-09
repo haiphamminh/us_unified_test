@@ -3,10 +3,11 @@ package com.usunified;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class SmallestDiffSubsetSum {
     public static void main(String[] args) {
-//        int[] arr = {5, 8, 15, 23, 25};
+//       int[] arr = {5, 8, 15, 23, 25};
         int[] arr = {25, 8, 5, 23, 15};
         // {10,25} {5,15,20} diff = 5 avg = 15
         // {5 25}=30 {8 23 15}=46 diff = 16
@@ -14,10 +15,12 @@ public class SmallestDiffSubsetSum {
         // {5 8 23}=36 {15 25}=40 diff = 4
         // {5 8 15}=28 {23 25}=46 diff = 18
         // {5 8 25}=38 {23 15}=38 diff = 0
+        System.out.println(findMin(arr, arr.length));
         List<List<Integer>> subsets = findSmallestDiffOfSubsets(arr);
         printSubsets(subsets);
 
         int[] arr4 = {5, 10, 15, 20, 25};
+        System.out.println(findMin(arr4, arr4.length));
         List<List<Integer>> subsets4 = findSmallestDiffOfSubsets(arr4);
         printSubsets(subsets4);
 
@@ -30,6 +33,8 @@ public class SmallestDiffSubsetSum {
         // {5 15 23 52}=95 {8 25 35}=68 diff=27
         // {5 8 35 52}=100 {15 25 35}=75 diff=25
         // {5 15 52}=72 {8 23 25 35}=91 diff=19
+        // {5 25 52}=82 {8 15 23 35}=81 diff=1
+        System.out.println(findMin(arr3, arr3.length));
         List<List<Integer>> subsets3 = findSmallestDiffOfSubsets(arr3);
         printSubsets(subsets3);
 
@@ -40,6 +45,7 @@ public class SmallestDiffSubsetSum {
         // {3 19 45} {6 10 30} diff = 21 avg = 19
         // {3 19 30} {6 10 45} diff = 9 avg = 19
         // {10 6 30}=46 {19 3 45}=67 diff=21
+        System.out.println(findMin(arr1, arr1.length));
         List<List<Integer>> subsets1 = findSmallestDiffOfSubsets(arr1);
         printSubsets(subsets1);
 
@@ -48,34 +54,37 @@ public class SmallestDiffSubsetSum {
         // {4 9 45}=58 {10 19 30}=59 diff = 1 avg = 23.4
         // {4 19 30}=53 {9 10 45}=64 diff = 11 avg = 23.4
         // {4 9 10}=23 {19 30 45}=94 diff = 71 avg = 23.4
+        System.out.println(findMin(arr2, arr2.length));
         List<List<Integer>> subsets2 = findSmallestDiffOfSubsets(arr2);
         printSubsets(subsets2);
+
+        int[] arr5 = {9, 10, 14, 20, 25}; // [14,25] [9,10,20] diff = 0
+        System.out.println(findMin(arr5, arr5.length));
+        List<List<Integer>> subsets5 = findSmallestDiffOfSubsets(arr5);
+        printSubsets(subsets5);
+
+        int[] arr6 = {9};
+        System.out.println(findMin(arr5, arr5.length));
+        List<List<Integer>> subsets6 = findSmallestDiffOfSubsets(arr6);
+        printSubsets(subsets6);
     }
-
-    /*static void printSumOfAllPossibleSubsets(int[] arr) {
-        int noItems = arr.length / 2;
-        for (int i = 0; i < arr.length; i++) {
-            for (int j = 0; i < arr.length; i++) {
-                for (int i = 0; i < arr.length; i++) {
-
-                }
-            }
-        }
-    }*/
 
     static List<List<Integer>> findSmallestDiffOfSubsets(int[] arr) {
         Arrays.sort(arr);
         List<Integer> subset1 = new ArrayList<>();
         List<Integer> subset2 = new ArrayList<>();
+        int n = arr.length;
         int sumLeft = 0, sumRight = 0;
-        for (int i = arr.length - 1; i >= 0; i--) {
-//        for (int i = 0; i < arr.length; i++) {
-            if (sumLeft < sumRight) {
-                subset1.add(arr[i]);
+        int sumTotal = IntStream.of(arr)
+                                .sum();
+        int halfSum = Math.round((float) sumTotal / 2);
+        for (int i = n - 1; i >= 0; i--) {
+            if (sumLeft + arr[i] <= halfSum) {
                 sumLeft += arr[i];
+                subset1.add(arr[i]);
             } else {
-                subset2.add(arr[i]);
                 sumRight += arr[i];
+                subset2.add(arr[i]);
             }
         }
         System.out.println(String.format("sumLeft = %d, sumRight = %d, diff = %d", sumLeft, sumRight,
@@ -86,5 +95,42 @@ public class SmallestDiffSubsetSum {
     static void printSubsets(List<List<Integer>> subsets) {
         subsets.forEach(System.out::println);
         System.out.println("------------------");
+    }
+
+    // Function to find the minimum sum
+    public static int findMinRec(int arr[], int i, int sumCalculated, int sumTotal) {
+        // If we have reached last element.
+        // Sum of one subset is sumCalculated,
+        // sum of other subset is sumTotal-
+        // sumCalculated.  Return absolute
+        // difference of two sums.
+        if (i == 0) {
+            int min = Math.abs((sumTotal - sumCalculated) - sumCalculated);
+//            System.out.println("min = " + min);
+            return min;
+        }
+
+
+        // For every item arr[i], we have two choices
+        // (1) We do not include it first set
+        // (2) We include it in first set
+        // We return minimum of two choices
+//        System.out.println("i = " + i);
+        int minLeft = findMinRec(arr, i - 1, sumCalculated + arr[i - 1], sumTotal);
+        int minRight = findMinRec(arr, i - 1, sumCalculated, sumTotal);
+//        System.out.println("minLeft = " + minLeft + ", minRight = " + minRight);
+        return Math.min(minLeft, minRight);
+    }
+
+    // Returns minimum possible difference between
+    // sums of two subsets
+    public static int findMin(int arr[], int n) {
+        // Compute total sum of elements
+        int sumTotal = 0;
+        for (int i = 0; i < n; i++)
+            sumTotal += arr[i];
+
+        // Compute result using recursive function
+        return findMinRec(arr, n, 0, sumTotal);
     }
 }
