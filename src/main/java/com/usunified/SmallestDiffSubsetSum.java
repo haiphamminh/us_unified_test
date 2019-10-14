@@ -3,24 +3,24 @@ package com.usunified;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class SmallestDiffSubsetSum {
     public static void main(String[] args) {
-//       int[] arr = {5, 8, 15, 23, 25};
-        int[] arr = {25, 8, 5, 23, 15};
-        // {10,25} {5,15,20} diff = 5 avg = 15
-        // {5 25}=30 {8 23 15}=46 diff = 16
-        // {5 15 23}=43 {8 25}=33 diff = 10
-        // {5 8 23}=36 {15 25}=40 diff = 4
-        // {5 8 15}=28 {23 25}=46 diff = 18
-        // {5 8 25}=38 {23 15}=38 diff = 0
+//        int[] arr = {1, 2, 3, 4, 5};  // {5 8 25}=38 {23 15}=38 diff = 0
+//        int[] arr = {2, 4, 5, 6, 13};  // {5 8 25}=38 {23 15}=38 diff = 0
+        int[] arr = {2, 4, 5, 6, 12};  // {5 8 25}=38 {23 15}=38 diff = 0
+//        int[] arr = {2, 3, 5, 6, 8};  // {5 8 25}=38 {23 15}=38 diff = 0
+//        int[] arr = {1, 3, 5, 6, 8};  // {5 8 25}=38 {23 15}=38 diff = 0
+//        int[] arr = {5, 8, 15, 23, 25};  // {5 8 25}=38 {23 15}=38 diff = 0
         System.out.println(findMin(arr, arr.length));
-        List<List<Integer>> subsets = findSmallestDiffOfSubsets(arr);
-        printSubsets(subsets);
+        System.out.println(findBalancePartition(arr));
+        printSubsets(findSmallestDiffOfSubsets(arr));
 
         int[] arr4 = {5, 10, 15, 20, 25};
         System.out.println(findMin(arr4, arr4.length));
+        System.out.println(findBalancePartition(arr4));
         List<List<Integer>> subsets4 = findSmallestDiffOfSubsets(arr4);
         printSubsets(subsets4);
 
@@ -35,6 +35,7 @@ public class SmallestDiffSubsetSum {
         // {5 15 52}=72 {8 23 25 35}=91 diff=19
         // {5 25 52}=82 {8 15 23 35}=81 diff=1
         System.out.println(findMin(arr3, arr3.length));
+        System.out.println(findBalancePartition(arr3));
         List<List<Integer>> subsets3 = findSmallestDiffOfSubsets(arr3);
         printSubsets(subsets3);
 
@@ -46,6 +47,7 @@ public class SmallestDiffSubsetSum {
         // {3 19 30} {6 10 45} diff = 9 avg = 19
         // {10 6 30}=46 {19 3 45}=67 diff=21
         System.out.println(findMin(arr1, arr1.length));
+        System.out.println(findBalancePartition(arr1));
         List<List<Integer>> subsets1 = findSmallestDiffOfSubsets(arr1);
         printSubsets(subsets1);
 
@@ -55,41 +57,75 @@ public class SmallestDiffSubsetSum {
         // {4 19 30}=53 {9 10 45}=64 diff = 11 avg = 23.4
         // {4 9 10}=23 {19 30 45}=94 diff = 71 avg = 23.4
         System.out.println(findMin(arr2, arr2.length));
+        System.out.println(findBalancePartition(arr2));
         List<List<Integer>> subsets2 = findSmallestDiffOfSubsets(arr2);
         printSubsets(subsets2);
 
         int[] arr5 = {9, 10, 14, 20, 25}; // [14,25] [9,10,20] diff = 0
         System.out.println(findMin(arr5, arr5.length));
+        System.out.println(findBalancePartition(arr5));
         List<List<Integer>> subsets5 = findSmallestDiffOfSubsets(arr5);
         printSubsets(subsets5);
 
-        int[] arr6 = {9};
-        System.out.println(findMin(arr5, arr5.length));
+        int[] arr6 = {9, 10, 16, 20, 25};
+        System.out.println(findMin(arr6, arr6.length));
+        System.out.println(findBalancePartition(arr6));
         List<List<Integer>> subsets6 = findSmallestDiffOfSubsets(arr6);
         printSubsets(subsets6);
+
+        int[] arr7 = {12, 15, 18, 20, 25};
+        System.out.println(findMin(arr7, arr7.length));
+        System.out.println(findBalancePartition(arr7));
+        List<List<Integer>> subsets7 = findSmallestDiffOfSubsets(arr7);
+        printSubsets(subsets7);
     }
 
     static List<List<Integer>> findSmallestDiffOfSubsets(int[] arr) {
         Arrays.sort(arr);
-        List<Integer> subset1 = new ArrayList<>();
-        List<Integer> subset2 = new ArrayList<>();
+
+        List<Integer> s1 = new ArrayList<>();
         int n = arr.length;
-        int sumLeft = 0, sumRight = 0;
-        int sumTotal = IntStream.of(arr)
-                                .sum();
-        int halfSum = Math.round((float) sumTotal / 2);
-        for (int i = n - 1; i >= 0; i--) {
-            if (sumLeft + arr[i] <= halfSum) {
-                sumLeft += arr[i];
-                subset1.add(arr[i]);
-            } else {
-                sumRight += arr[i];
-                subset2.add(arr[i]);
+        int sum = IntStream.of(arr)
+                           .sum();
+        int half = sum / 2;
+        boolean T[][] = new boolean[n + 1][half + 1];
+
+        for (int i = 0; i <= n; i++) {
+            T[i][0] = true;
+        }
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= half; j++) {
+                T[i][j] = T[i - 1][j];
+                if (arr[i - 1] <= j) {
+                    T[i][j] |= T[i - 1][j - arr[i - 1]];
+                }
             }
         }
-        System.out.println(String.format("sumLeft = %d, sumRight = %d, diff = %d", sumLeft, sumRight,
-                                         Math.abs(sumLeft - sumRight)));
-        return Arrays.asList(subset1, subset2);
+
+        int i = n, j = half;
+        while (!T[i][j]) j--;
+
+        while (T[i][j] && i >= 1 && j >= 1) {
+            if (!T[i - 1][j]) {
+                s1.add(arr[i - 1]);
+                j -= arr[i - 1];
+            }
+            i--;
+        }
+
+        List<Integer> s2 = IntStream.of(arr)
+                                    .boxed()
+                                    .filter(e -> !s1.contains(e))
+                                    .collect(Collectors.toList());
+
+        int sum1 = s1.stream()
+                     .reduce(0, Integer::sum);
+        int sum2 = s2.stream()
+                     .reduce(0, Integer::sum);
+
+        System.out.println("diff = " + Math.abs(sum2 - sum1));
+        return Arrays.asList(s1, s2);
     }
 
     static void printSubsets(List<List<Integer>> subsets) {
@@ -132,5 +168,51 @@ public class SmallestDiffSubsetSum {
 
         // Compute result using recursive function
         return findMinRec(arr, n, 0, sumTotal);
+    }
+
+    public static int findBalancePartition(int[] a) {
+
+        // Calculate sum of all the elements in set
+        int S = 0;
+        for (int i = 0; i < a.length; i++)
+            S += a[i];
+
+        boolean T[][] = new boolean[a.length + 1][S + 1];
+
+        /* Initialize first column as true.
+            0 sum is possible with all elements.
+        */
+        for (int i = 0; i <= a.length; i++)
+            T[i][0] = true;
+
+        /*  Initialize top row, except dp[0][0],
+            as false. With 0 elements, no other
+            sum except 0 is possible
+        */
+        for (int i = 1; i <= S; i++)
+            T[0][i] = false;
+
+
+        for (int i = 1; i <= a.length; i++) {
+            for (int j = 1; j <= S; j++) {
+                // If ith element is excluded
+                T[i][j] = T[i - 1][j];
+
+                // If ith element is included
+                if (a[i - 1] <= j) T[i][j] |= T[i - 1][j - a[i - 1]];
+            }
+        }
+
+        // Initialize difference of two sums.
+        int diff = Integer.MAX_VALUE;
+
+        for (int j = S / 2; j >= 0; j--) {
+            // Find the
+            if (T[a.length][j] == true) {
+                diff = S - 2 * j;
+                break;
+            }
+        }
+        return diff;
     }
 }
