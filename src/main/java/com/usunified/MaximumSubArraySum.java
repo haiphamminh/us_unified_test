@@ -47,10 +47,17 @@ public class MaximumSubArraySum {
         print(arr7, arr7.length, 0);
         System.out.println(maxSumOfSubArray(arr7));
         System.out.println(maxCircularSum(arr7));
+        System.out.println();
+
+        int[] arr8 = {-8, -3, -6, -2, -5, -4};
+        print(arr8, arr8.length, 0);
+        System.out.println(maxSumOfSubArray(arr8));
+        System.out.println(maxCircularSum(arr8));
     }
 
     static int maxSumOfSubArray(int[] A) {
         System.out.print("maxSumOfSubArray: ");
+
         // negate all elements of the array
         for (int i = 0; i < A.length; i++) {
             A[i] = -A[i];
@@ -107,6 +114,16 @@ public class MaximumSubArraySum {
     // Standard Kadane's algorithm to find maximum subarray sum
     // See https://www.geeksforgeeks.org/archives/576 for details
     static int kadane(int a[]) {
+        // find maximum element present in given array
+        int max = Arrays.stream(a)
+                        .max()
+                        .getAsInt();
+
+        // if array contains all negative values, return maximum element
+        if (max < 0) {
+            return max;
+        }
+
         // stores maximum sum sub-array found so far
         int max_so_far = 0;
 
