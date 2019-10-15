@@ -2,7 +2,9 @@ package com.usunified;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -10,15 +12,24 @@ public class SmallestDiffSubsetSum {
     public static void main(String[] args) {
 //        int[] arr = {1, 2, 3, 4, 5};  // {5 8 25}=38 {23 15}=38 diff = 0
 //        int[] arr = {2, 4, 5, 6, 13};  // {5 8 25}=38 {23 15}=38 diff = 0
-        int[] arr = {2, 4, 5, 6, 12};  // {5 8 25}=38 {23 15}=38 diff = 0
+//        int[] arr = {2, 4, 5, 6, 12};  // {5 8 25}=38 {23 15}=38 diff = 0
 //        int[] arr = {2, 3, 5, 6, 8};  // {5 8 25}=38 {23 15}=38 diff = 0
 //        int[] arr = {1, 3, 5, 6, 8};  // {5 8 25}=38 {23 15}=38 diff = 0
 //        int[] arr = {5, 8, 15, 23, 25};  // {5 8 25}=38 {23 15}=38 diff = 0
-        System.out.println(findMin(arr, arr.length));
+//        int[] arr = {50, 17, 9, 14, 12, 23, 19, 76, 54, 72, 67};  // {5 8 25}=38 {23 15}=38 diff = 0
+        int n = 1000000;
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) {
+            arr[i] = i * 2 + 1;
+        }
+        Map<String, Integer> lookup = new HashMap<>();
+        System.out.println(minPartition(arr, arr.length - 1, 0, 0, lookup));
+//        System.out.println(findMin(arr, arr.length));
         System.out.println(findBalancePartition(arr));
         printSubsets(findSmallestDiffOfSubsets(arr));
 
-        int[] arr4 = {5, 10, 15, 20, 25};
+        int[] arr4 = {5, 15, 25, 35, 45};
+//        int[] arr4 = {5, 10, 15, 20, 25};
         System.out.println(findMin(arr4, arr4.length));
         System.out.println(findBalancePartition(arr4));
         List<List<Integer>> subsets4 = findSmallestDiffOfSubsets(arr4);
@@ -50,6 +61,7 @@ public class SmallestDiffSubsetSum {
         System.out.println(findBalancePartition(arr1));
         List<List<Integer>> subsets1 = findSmallestDiffOfSubsets(arr1);
         printSubsets(subsets1);
+//        printSubsets(findSmallestDiffOfSubsetsII(arr1));
 
         int[] arr2 = {4, 9, 10, 19, 30, 45};
         // {4 10 45}=59 {9 19 30}=58 diff = 1 avg = 23.4
@@ -80,6 +92,37 @@ public class SmallestDiffSubsetSum {
         printSubsets(subsets7);
     }
 
+    // Partition the set S into two subsets S1, S2 such that the
+    // difference between the sum of elements in S1 and the sum
+    // of elements in S2 is minimized
+    static int minPartition(int[] S, int n, int S1, int S2, Map<String, Integer> lookup) {
+        // base case: if list becomes empty, return the absolute
+        // difference between two sets
+        if (n < 0) {
+            return Math.abs(S1 - S2);
+        }
+
+        // construct a unique map key from dynamic elements of the input
+        // Note that can uniquely identify the subproblem with n & S1 only,
+        // as S2 is nothing but S - S1 where S is sum of all elements
+        String key = n + "|" + S1;
+
+        // if sub-problem is seen for the first time, solve it and
+        // store its result in a map
+        if (!lookup.containsKey(key)) {
+            // Case 1. include current item in the subset S1 and recur
+            // for remaining items (n - 1)
+            int inc = minPartition(S, n - 1, S1 + S[n], S2, lookup);
+
+            // Case 2. exclude current item from subset S1 and recur for
+            // remaining items (n - 1)
+            int exc = minPartition(S, n - 1, S1, S2 + S[n], lookup);
+
+            lookup.put(key, Integer.min(inc, exc));
+        }
+        return lookup.get(key);
+    }
+
     static List<List<Integer>> findSmallestDiffOfSubsets(int[] arr) {
         Arrays.sort(arr);
 
@@ -88,7 +131,7 @@ public class SmallestDiffSubsetSum {
         int sum = IntStream.of(arr)
                            .sum();
         int half = sum / 2;
-        boolean T[][] = new boolean[n + 1][half + 1];
+        boolean[][] T = new boolean[n + 1][half + 1];
 
         for (int i = 0; i <= n; i++) {
             T[i][0] = true;
@@ -123,8 +166,8 @@ public class SmallestDiffSubsetSum {
                      .reduce(0, Integer::sum);
         int sum2 = s2.stream()
                      .reduce(0, Integer::sum);
-
-        System.out.println("diff = " + Math.abs(sum2 - sum1));
+        System.out.println("sum= " + sum + "; half= " + half);
+        System.out.println("sum1= " + sum1 + "; sum2= " + sum2 + "; diff= " + Math.abs(sum2 - sum1));
         return Arrays.asList(s1, s2);
     }
 
@@ -159,7 +202,7 @@ public class SmallestDiffSubsetSum {
     }
 
     // Returns minimum possible difference between
-    // sums of two subsets
+// sums of two subsets
     public static int findMin(int arr[], int n) {
         // Compute total sum of elements
         int sumTotal = 0;
